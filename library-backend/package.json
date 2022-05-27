@@ -1,0 +1,25 @@
+{
+  "name": "library-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix ."
+  },
+  "author": "Jose Pradenas",
+  "license": "MIT",
+  "dependencies": {
+    "apollo-server": "^3.7.0",
+    "dotenv": "^16.0.1",
+    "graphql": "^16.5.0",
+    "mongoose": "^6.3.4"
+  },
+  "devDependencies": {
+    "eslint": "^8.16.0",
+    "nodemon": "^2.0.16",
+    "prettier": "2.6.2"
+  }
+}
