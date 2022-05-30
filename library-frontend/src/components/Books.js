@@ -1,6 +1,7 @@
 import { useQuery } from '@apollo/client';
 import { useEffect, useState } from 'react';
 import { ALL_BOOKS } from '../queries';
+import BooksTable from './BooksTable';
 
 const Filter = ({ filters, setFilter }) => {
   return (
@@ -20,7 +21,9 @@ const Books = ({ show }) => {
   const { loading, data } = useQuery(ALL_BOOKS);
   useEffect(() => {
     if (data) {
-      setFilters(data.allBooks.map((b) => b.genres).flat(1));
+      const genres = data.allBooks.map((b) => b.genres).flat(1);
+      const uniqueGenres = new Set(genres);
+      setFilters([...uniqueGenres]);
     }
   }, [data]);
   if (!show) return null;
@@ -29,24 +32,11 @@ const Books = ({ show }) => {
     <div>
       <h2>Books</h2>
       {filter && <p>in genre {filter}</p>}
-      <table>
-        <tbody>
-          <tr>
-            <th></th>
-            <th>author</th>
-            <th>published</th>
-          </tr>
-          {data.allBooks
-            .filter((b) => (filter ? b.genres.includes(filter) : true))
-            .map((b) => (
-              <tr key={b.id}>
-                <td>{b.title}</td>
-                <td>{b.author.name}</td>
-                <td>{b.published}</td>
-              </tr>
-            ))}
-        </tbody>
-      </table>
+      <BooksTable
+        books={data.allBooks.filter((b) =>
+          filter ? b.genres.includes(filter) : true
+        )}
+      />
       <Filter setFilter={setFilter} filters={filters} />
     </div>
   );
