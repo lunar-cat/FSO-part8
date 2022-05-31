@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client';
-import { ADD_BOOK, ALL_BOOKS, ALL_AUTHORS } from '../queries';
+import { ADD_BOOK, ALL_BOOKS, ALL_AUTHORS, USER } from '../queries';
 
 const NewBook = ({ show }) => {
   const [title, setTitle] = useState('');
@@ -10,7 +10,49 @@ const NewBook = ({ show }) => {
   const [genres, setGenres] = useState([]);
 
   const [addBook] = useMutation(ADD_BOOK, {
-    refetchQueries: [{ query: ALL_BOOKS }, { query: ALL_AUTHORS }],
+    update: (cache, { data }) => {
+      const { me } = cache.readQuery({ query: USER });
+      const book = data.addBook;
+      const author = data.addBook.author;
+
+      const { allAuthors } = cache.readQuery({ query: ALL_AUTHORS });
+      let updatedAuthors;
+      // update
+      if (allAuthors.map((a) => a.id).includes(author.id)) {
+        updatedAuthors = allAuthors.map((a) =>
+          a.id !== author.id ? a : author
+        );
+      } else {
+        // new
+        updatedAuthors = allAuthors.concat(author);
+      }
+      cache.writeQuery({
+        query: ALL_AUTHORS,
+        data: { allAuthors: updatedAuthors }
+      });
+
+      const withoutFilterQuery = {
+        query: ALL_BOOKS,
+        variables: { genre: null }
+      };
+      const withoutFilter = cache.readQuery(withoutFilterQuery);
+      cache.writeQuery({
+        ...withoutFilterQuery,
+        data: { allBooks: withoutFilter.allBooks.concat(book) }
+      });
+
+      if (book.genres.includes(me.favouriteGenre)) {
+        const filteredQuery = {
+          query: ALL_BOOKS,
+          variables: { genre: me.favouriteGenre }
+        };
+        const filtered = cache.readQuery(filteredQuery);
+        cache.writeQuery({
+          ...filteredQuery,
+          data: { allBooks: filtered.allBooks.concat(book) }
+        });
+      }
+    },
     onError: (e) => console.error(e.graphQLErrors[0].message)
   });
   if (!show) return null;
