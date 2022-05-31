@@ -33,15 +33,21 @@ function App() {
       </div>
       <Authors show={page === 'authors'} />
       <Books show={page === 'books'} />
-      <NewBook show={page === 'add'} />
       <LoginForm
         show={page === 'login'}
         setToken={setToken}
         setPage={() => setPage('books')}
       />
-      <Recommend show={page === 'recommend'} />
+      {token && (
+        <>
+          <NewBook show={page === 'add'} />
+          <Recommend show={page === 'recommend'} />
+        </>
+      )}
     </div>
   );
 }
-
+/* La otra forma de hacer que Recommend cargue bien (cuando exista token)
+sería pasarle la variable token, y agregar la opción de skip
+con el useQuery, así skipea cuando no haya token !token */
 export default App;
