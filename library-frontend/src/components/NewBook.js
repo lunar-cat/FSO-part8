@@ -36,10 +36,12 @@ const NewBook = ({ show }) => {
         variables: { genre: null }
       };
       const withoutFilter = cache.readQuery(withoutFilterQuery);
-      cache.writeQuery({
-        ...withoutFilterQuery,
-        data: { allBooks: withoutFilter.allBooks.concat(book) }
-      });
+      if (!withoutFilter.allBooks.some((b) => b.id === book.id)) {
+        cache.writeQuery({
+          ...withoutFilterQuery,
+          data: { allBooks: withoutFilter.allBooks.concat(book) }
+        });
+      }
 
       if (book.genres.includes(me.favouriteGenre)) {
         const filteredQuery = {
@@ -47,10 +49,12 @@ const NewBook = ({ show }) => {
           variables: { genre: me.favouriteGenre }
         };
         const filtered = cache.readQuery(filteredQuery);
-        cache.writeQuery({
-          ...filteredQuery,
-          data: { allBooks: filtered.allBooks.concat(book) }
-        });
+        if (!filtered.allBooks.some((b) => b.id === book.id)) {
+          cache.writeQuery({
+            ...filteredQuery,
+            data: { allBooks: filtered.allBooks.concat(book) }
+          });
+        }
       }
     },
     onError: (e) => console.error(e.graphQLErrors[0].message)

@@ -1,6 +1,6 @@
 import { useQuery } from '@apollo/client';
 import { useEffect, useState } from 'react';
-import { ALL_BOOKS } from '../queries';
+import { ALL_BOOKS, BOOK_ADDED } from '../queries';
 import BooksTable from './BooksTable';
 
 const Filter = ({ filters, setFilter }) => {
@@ -18,7 +18,7 @@ const Filter = ({ filters, setFilter }) => {
 const Books = ({ show }) => {
   const [filter, setFilter] = useState(null);
   const [filters, setFilters] = useState([]);
-  const { loading, data } = useQuery(ALL_BOOKS, {
+  const { loading, data, subscribeToMore } = useQuery(ALL_BOOKS, {
     variables: { genre: filter }
   });
   useEffect(() => {
@@ -30,6 +30,24 @@ const Books = ({ show }) => {
       setFilters([...uniqueGenres]);
     }
   }, [data, filter]);
+  useEffect(() => {
+    console.log('running subscribeToMore useEffect');
+    subscribeToMore({
+      document: BOOK_ADDED,
+      // prev is currently cached result
+      // the return value completely replaces the cached query
+      updateQuery: (prev, { subscriptionData }) => {
+        if (!subscriptionData.data) return prev;
+        const { bookAdded } = subscriptionData.data;
+        console.log('prev', prev);
+        console.log('new book', bookAdded);
+        if (prev.allBooks.find((b) => b.id === bookAdded.id)) return prev;
+        return {
+          allBooks: prev.allBooks.concat(bookAdded)
+        };
+      }
+    });
+  }, [subscribeToMore]);
   if (!show) return null;
   if (loading) return <div>loading...</div>;
   return (

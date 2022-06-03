@@ -39,7 +39,7 @@ async function startApolloServer(typeDefs, resolvers) {
   // WS
   const wsServer = new WebSocketServer({
     server: httpServer,
-    path: '/graphql'
+    path: '/'
   });
   const serverCleanup = useServer({ schema }, wsServer);
 
