@@ -26,7 +26,7 @@ const Authors = ({ show }) => {
           ))}
         </tbody>
       </table>
-      <BirthForm authors={data.allAuthors} />
+      {data.allAuthors.length > 0 && <BirthForm authors={data.allAuthors} />}
     </div>
   );
 };

@@ -44,27 +44,29 @@ const resolvers = {
     }
   },
   Author: {
+    //eslint-disable-next-line
     bookCount: async (root) => {
-      return await Book.countDocuments({ author: root.id }); // .id because apollo/graphql handles the ._id <-> .id conversion
+      const author = root;
+      return author.books.length;
     }
   },
   Mutation: {
     addBook: async (root, args, { currentUser }) => {
       if (!currentUser) throw new AuthenticationError('not authenticated');
-      const author = await Author.findOne({ name: args.author });
-      let authorID;
+      let author = await Author.findOne({ name: args.author });
       if (!author) {
-        const newAuthor = new Author({ name: args.author });
+        author = new Author({ name: args.author, books: [] });
         try {
-          await newAuthor.save();
+          await author.save();
         } catch (error) {
           throw new UserInputError(error.message, { invalidArgs: args });
         }
-        authorID = newAuthor._id;
       }
-      const book = new Book({ ...args, author: authorID || author._id });
+      const book = new Book({ ...args, author: author._id });
       try {
         await book.save();
+        author.books = author.books.concat(book._id);
+        await author.save();
       } catch (error) {
         throw new UserInputError(error.message, { invalidArgs: args });
       }
