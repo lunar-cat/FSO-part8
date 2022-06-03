@@ -39,9 +39,8 @@ const Books = ({ show }) => {
       updateQuery: (prev, { subscriptionData }) => {
         if (!subscriptionData.data) return prev;
         const { bookAdded } = subscriptionData.data;
-        console.log('prev', prev);
-        console.log('new book', bookAdded);
         if (prev.allBooks.find((b) => b.id === bookAdded.id)) return prev;
+        window.alert(`New Book Added: ${bookAdded.title}`);
         return {
           allBooks: prev.allBooks.concat(bookAdded)
         };
